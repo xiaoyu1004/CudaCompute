@@ -1,0 +1,5 @@
+NVIDIA GeForce MX450: 896 * 1.58 * 2 = 2831.36 GFLOPS
+
+==================== Transpose ===================
+                                achieved_occupancy(sm占用率)    gld_throughput（全局内存加载吞吐量）
+Read merge, write not merge     
