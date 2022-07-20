@@ -2,6 +2,17 @@
 
 #include <iostream>
 
+__global__ void matrix_copy_kernel(int m, int n, const float *src, float *dst)
+{
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < m && j < n)
+    {
+        dst[i * n + j] = src[i * n + j];
+    }
+}
+
 __global__ void matrix_trans_kernel(int m, int n, const float *src, float *dst)
 {
     int i = blockIdx.y * blockDim.y + threadIdx.y;
@@ -48,11 +59,12 @@ int main()
     int M = 1 << 9;
     int N = 1 << 9;
 
-    // int M = 1 << 5;
-    // int N = 1 << 5;
+    // int M = 1 << 3;
+    // int N = 1 << 3;
 
     // host
     float *h_data = new float[M * N];
+    float *h_tmp_data = new float[M * N];
     float *h_ref_data = new float[M * N];
     InitData(M, N, h_data);
 
@@ -73,6 +85,8 @@ int main()
     for (int i = 0; i < warm_count; ++i)
     {
         matrix_trans_kernel<<<block, grid>>>(M, N, src_data, dst_data);
+        // matrix_trans_shared_kernel<<<block, grid>>>(M, N, src_data, dst_data);
+        // matrix_copy_kernel<<<block, grid>>>(M, N, src_data, dst_data);
         CUDA_CHECK(cudaDeviceSynchronize());
     }
 
@@ -82,6 +96,8 @@ int main()
     for (int i = 0; i < loop_count; ++i)
     {
         matrix_trans_kernel<<<block, grid>>>(M, N, src_data, dst_data);
+        // matrix_trans_shared_kernel<<<block, grid>>>(M, N, src_data, dst_data);
+        // matrix_copy_kernel<<<block, grid>>>(M, N, src_data, dst_data);
         CUDA_CHECK(cudaDeviceSynchronize());
     }
     t.stop();
@@ -94,10 +110,20 @@ int main()
 
     CUDA_CHECK(cudaMemcpy(h_ref_data, dst_data, M * N * sizeof(float), cudaMemcpyDeviceToHost));
 
+    // compare result
+    transpose_cpu(M, N, h_data, h_tmp_data);
+    float err = CompareResult(M, N, h_ref_data, h_tmp_data);
+    if (err > 1e-2)
+    {
+        std::cout << "ERROR: " << err << std::endl;
+    }
+
     // PrintData(N, M, h_ref_data);
+    // PrintData(N, M, h_tmp_data);
 
     delete[] h_data;
     delete[] h_ref_data;
+    delete[] h_tmp_data;
 
     CUDA_CHECK(cudaFree(src_data));
     CUDA_CHECK(cudaFree(dst_data));

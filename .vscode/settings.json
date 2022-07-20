@@ -3,7 +3,7 @@
     "editor.minimap.enabled": false,
     "files.autoSave": "afterDelay",
     "editor.fontSize": 16,
-    "cmake.cmakePath": "D:\\softwares\\cmake-3.24.0-rc3-windows-x86_64\\bin\\cmake.exe",
+    // "cmake.cmakePath": "D:\\softwares\\cmake-3.24.0-rc3-windows-x86_64\\bin\\cmake.exe",
     "cmake.configureSettings": {
     },
     "files.associations": {

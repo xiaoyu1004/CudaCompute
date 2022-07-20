@@ -28,4 +28,8 @@ void InitData(int m, int n, float *p);
 
 void PrintData(int m, int n, const float *p);
 
+void transpose_cpu(int m, int n, const float *src, float *dst);
+
+float CompareResult(int m, int n, const float *a, float *b);
+
 #endif
