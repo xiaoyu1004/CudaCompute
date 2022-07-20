@@ -1,6 +1,15 @@
 NVIDIA GeForce MX450: 896 * 1.58 * 2 = 2831.36 GFLOPS
 NVIDIA GeForce 940MX: 384 * 1.19 * 2 = 913.92 GFLOPS
 
+https://zhuanlan.zhihu.com/p/435908830
+
 ==================== Transpose ===================
-                                achieved_occupancy(sm占用率)    gld_throughput（全局内存加载吞吐量）
-Read merge, write not merge             90%                                 
+                                achieved_occupancy  gld_throughput   gst_throughput     gld_efficiency  gst_efficiency  gld_transactions    gst_transactions    shared_efficiency
+Read merge, write not merge             85%              35GB/S          141GB/S            100%            25%             32768                 131072                0%
+copy data from src to dst               89%              38GB/S           38GB/S            100%            100%            32768                  32768                0%
+write merge, read not merge             86%              141GB/S          34GB/S            25%             100%            131072                 32768                0%
+shared memory,read and write merge      88%              34GB/S           33GB/S            100%            100%            32768                  32768                11.11%
+
+==================== Gemm ===================
+1.naive gemm                                question: Massive access to global memory
+2.global memory Chunking algorithm

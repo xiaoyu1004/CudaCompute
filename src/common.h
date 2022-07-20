@@ -30,6 +30,11 @@ void PrintData(int m, int n, const float *p);
 
 void transpose_cpu(int m, int n, const float *src, float *dst);
 
+void gemm_cpu(int m, int n, int k,
+              const float *A, int lda,
+              const float *B, int ldb,
+              float *C, int ldc);
+
 float CompareResult(int m, int n, const float *a, float *b);
 
 #endif

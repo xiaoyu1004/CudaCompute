@@ -18,15 +18,15 @@ __global__ void matrix_trans_kernel(int m, int n, const float *src, float *dst)
     int i = blockIdx.y * blockDim.y + threadIdx.y;
     int j = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i < m && j < n)
-    {
-        dst[j * m + i] = src[i * n + j];
-    }
-
-    // if (j < m && i < n)
+    // if (i < m && j < n)
     // {
-    //     dst[i * m + j] = src[j * n + i];
+    //     dst[j * m + i] = src[i * n + j];
     // }
+
+    if (j < m && i < n)
+    {
+        dst[i * m + j] = src[j * n + i];
+    }
 }
 
 const int BLOCK_SIZE = 32;
@@ -84,8 +84,8 @@ int main()
     int warm_count = 3;
     for (int i = 0; i < warm_count; ++i)
     {
-        matrix_trans_kernel<<<block, grid>>>(M, N, src_data, dst_data);
-        // matrix_trans_shared_kernel<<<block, grid>>>(M, N, src_data, dst_data);
+        // matrix_trans_kernel<<<block, grid>>>(M, N, src_data, dst_data);
+        matrix_trans_shared_kernel<<<block, grid>>>(M, N, src_data, dst_data);
         // matrix_copy_kernel<<<block, grid>>>(M, N, src_data, dst_data);
         CUDA_CHECK(cudaDeviceSynchronize());
     }
@@ -95,8 +95,8 @@ int main()
     t.start();
     for (int i = 0; i < loop_count; ++i)
     {
-        matrix_trans_kernel<<<block, grid>>>(M, N, src_data, dst_data);
-        // matrix_trans_shared_kernel<<<block, grid>>>(M, N, src_data, dst_data);
+        // matrix_trans_kernel<<<block, grid>>>(M, N, src_data, dst_data);
+        matrix_trans_shared_kernel<<<block, grid>>>(M, N, src_data, dst_data);
         // matrix_copy_kernel<<<block, grid>>>(M, N, src_data, dst_data);
         CUDA_CHECK(cudaDeviceSynchronize());
     }

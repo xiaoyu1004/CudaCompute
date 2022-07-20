@@ -8,7 +8,7 @@ void InitData(int m, int n, float *p)
     {
         for (int j = 0; j < n; ++j)
         {
-            p[i * n + j] = static_cast<float>(i + j * 2);
+            p[i * n + j] = static_cast<float>((i + j * 2) % 100);
         }
     }
 }
@@ -46,4 +46,23 @@ float CompareResult(int m, int n, const float *a, float *b)
     }
 
     return std::sqrt(diff);
+}
+
+void gemm_cpu(int m, int n, int k,
+              const float *A, int lda,
+              const float *B, int ldb,
+              float *C, int ldc)
+{
+    for (int i = 0; i < m; ++i)
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            float v = 0.f;
+            for (int p = 0; p < k; ++p)
+            {
+                v += A[i * lda + p] * B[p * ldb + j];
+            }
+            C[i * ldc + j] = v;
+        }
+    }
 }
