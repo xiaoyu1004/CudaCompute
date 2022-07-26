@@ -13,11 +13,11 @@ void InitData(int m, int n, float *p)
     }
 }
 
-void InitData(int n, float *p)
+void InitData(std::uint32_t n, float *p)
 {
     for (int i = 0; i < n; ++i)
     {
-        p[i] = static_cast<float>(1.f);
+        p[i] = static_cast<float>(i % 100);
     }
 }
 
@@ -34,14 +34,22 @@ void PrintData(int m, int n, const float *p)
     std::cout << std::endl;
 }
 
-float ReduceCPU(int n, const float *in)
+float ReduceCPU(std::uint32_t n, const float *in)
 {
     float result = 0.f;
-    for (int i = 0; i < n; ++i)
+    for (std::uint32_t i = 0; i < n; ++i)
     {
         result += in[i];
     }
     return result;
+}
+
+void VecAddCPU(int n, const float *a, const float *b, float *c)
+{
+    for (int i = 0; i < n; ++i)
+    {
+        c[i] = a[i] + b[i];
+    }
 }
 
 void transpose_cpu(int m, int n, const float *src, float *dst)

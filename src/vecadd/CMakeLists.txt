@@ -1,0 +1,1 @@
+add_executable(vecadd ${common_src} vecadd.cu)

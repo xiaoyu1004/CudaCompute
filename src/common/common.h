@@ -26,11 +26,13 @@
 
 void InitData(int m, int n, float *p);
 
-void InitData(int n, float *p);
+void InitData(std::uint32_t n, float *p);
 
 void PrintData(int m, int n, const float *p);
 
-float ReduceCPU(int n, const float *in);
+float ReduceCPU(std::uint32_t n, const float *in);
+
+void VecAddCPU(int n, const float *a, const float *b, float *c);
 
 void transpose_cpu(int m, int n, const float *src, float *dst);
 

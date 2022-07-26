@@ -20,7 +20,7 @@
 // #define grid(n) (((n - 1) / blocks + 1) / 4) // unroll4
 #define grid(n) (((n - 1) / blocks + 1) / 8) // unroll8
 
-__global__ void reduce_base_line(int n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_base_line(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
 {
     float *__restrict__ in_data = in + blockIdx.x * blockDim.x;
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -46,7 +46,7 @@ __global__ void reduce_base_line(int n, float *__restrict__ in, float *__restric
     }
 }
 
-__global__ void reduce_branch_differentiation(int n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_branch_differentiation(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
 {
     float *__restrict__ in_data = in + blockIdx.x * blockDim.x;
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -73,7 +73,7 @@ __global__ void reduce_branch_differentiation(int n, float *__restrict__ in, flo
     }
 }
 
-__global__ void reduce_shared_memory(int n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_shared_memory(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
 {
     extern __shared__ float s_data[];
 
@@ -104,7 +104,7 @@ __global__ void reduce_shared_memory(int n, float *__restrict__ in, float *__res
     }
 }
 
-__global__ void reduce_no_bank_conflict(int n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_no_bank_conflict(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
 {
     float *in_data = in + blockIdx.x * blockDim.x;
     int tid = threadIdx.x;
@@ -128,9 +128,9 @@ __global__ void reduce_no_bank_conflict(int n, float *__restrict__ in, float *__
     }
 }
 
-__global__ void reduce_shared_memory_unroll2(int n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_shared_memory_unroll2(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
 {
-    float *in_data = in + blockDim.x * blockIdx.x;
+    float *in_data = in + 2 * blockDim.x * blockIdx.x;
     int tid = threadIdx.x;
     // unroll 2
     extern __shared__ float s_data[];
@@ -152,7 +152,7 @@ __global__ void reduce_shared_memory_unroll2(int n, float *__restrict__ in, floa
     }
 }
 
-__global__ void reduce_shared_memory_unroll4(int n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_shared_memory_unroll4(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
 {
     float *in_data = in + blockIdx.x * blockDim.x;
     int tid = threadIdx.x;
@@ -176,9 +176,9 @@ __global__ void reduce_shared_memory_unroll4(int n, float *__restrict__ in, floa
     }
 }
 
-__global__ void reduce_shared_memory_unroll8(int n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_shared_memory_unroll8(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
 {
-    float *in_data = in + blockIdx.x * blockDim.x;
+    float *in_data = in + 8 * blockIdx.x * blockDim.x;
     int tid = threadIdx.x;
     extern __shared__ float s_data[];
     s_data[tid] = in_data[tid] + in_data[tid + blocks] + in_data[tid + 2 * blocks] + in_data[tid + 3 * blocks] +
@@ -206,7 +206,7 @@ int main(int argc, const char **argv)
     // std::ofstream fs("reduce_shared_memory_unroll2.txt", std::ios::out);
     // fs << "n\t\tperformance\t\tbandwidth\t\terr" << std::endl;
 
-    int n = 1 << 24;
+    std::uint32_t n = 1 << 20;
     float *h_data = new float[n];
 
     InitData(n, h_data);
@@ -241,14 +241,14 @@ int main(int argc, const char **argv)
         t.stop();
         CUDA_CHECK(cudaMemcpy(h_ref_data, d_ref_data, grid(n) * sizeof(float), cudaMemcpyDeviceToHost));
 
-        min = std::min(min, t.get_elapsed_milli_seconds());
-        max = std::max(max, t.get_elapsed_milli_seconds());
-        avg += t.get_elapsed_milli_seconds();
+        min = std::min(min, t.get_elapsed_nano_seconds());
+        max = std::max(max, t.get_elapsed_nano_seconds());
+        avg += t.get_elapsed_nano_seconds();
     }
     avg /= loop_count;
 
     float d_sum = 0.f;
-    for (int i = 0; i < grid(n); ++i)
+    for (std::uint32_t i = 0; i < grid(n); ++i)
     {
         d_sum += h_ref_data[i];
     }
@@ -260,16 +260,18 @@ int main(int argc, const char **argv)
     }
     else
     {
-        std::cout << "PASS: result is correct" << std::endl;
+        std::cout << std::setprecision(2) << std::fixed << "PASS: result is correct" << std::endl;
+        std::cout << "h_sum: " << h_sum << std::endl;
+        std::cout << "d_sum: " << d_sum << std::endl;
     }
 
     double flops = n;
-    double performance = flops / (avg * 1e6);
-    double bandwidth = 2 * n * sizeof(float) / (avg * 1e6);
-    std::cout << std::setprecision(2) << std::fixed << n << "\t" << performance << "\t" << bandwidth << "\t" << err << std::endl;
+    double performance = flops / avg;
+    double bandwidth = 2 * n * sizeof(float) / avg;
+    std::cout << n << "\t" << performance << "\t" << bandwidth << "\t" << err << std::endl;
 
     std::cout << "max(ms)\tmin(ms)\tavg(ms)" << std::endl;
-    std::cout << max << "\t" << min << "\t" << avg << std::endl;
+    std::cout << max * 1e-6 << "\t" << min * 1e-6 << "\t" << avg * 1e-6 << std::endl;
 
     CUDA_CHECK(cudaFree(d_data));
     CUDA_CHECK(cudaFree(d_ref_data));

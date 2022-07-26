@@ -3,10 +3,10 @@
     "editor.minimap.enabled": false,
     "files.autoSave": "afterDelay",
     "editor.fontSize": 16,
-    // "cmake.cmakePath": "D:\\softwares\\cmake-3.24.0-rc3-windows-x86_64\\bin\\cmake.exe",
     "cmake.configureSettings": {
     },
     "files.associations": {
+        "*.m": "matlab",
         "xlocale": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
@@ -58,6 +58,11 @@
         "list": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
-        "xhash": "cpp"
-    }
+        "xhash": "cpp",
+        "cstdarg": "cpp",
+        "iomanip": "cpp",
+        "xlocmon": "cpp",
+        "xloctime": "cpp"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }
