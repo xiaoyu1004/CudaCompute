@@ -1,0 +1,1 @@
+add_executable(reduce ${common_src} reduce.cu)

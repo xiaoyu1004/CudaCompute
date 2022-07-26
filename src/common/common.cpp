@@ -13,6 +13,14 @@ void InitData(int m, int n, float *p)
     }
 }
 
+void InitData(int n, float *p)
+{
+    for (int i = 0; i < n; ++i)
+    {
+        p[i] = static_cast<float>(1.f);
+    }
+}
+
 void PrintData(int m, int n, const float *p)
 {
     for (int i = 0; i < m; ++i)
@@ -24,6 +32,16 @@ void PrintData(int m, int n, const float *p)
         std::cout << std::endl;
     }
     std::cout << std::endl;
+}
+
+float ReduceCPU(int n, const float *in)
+{
+    float result = 0.f;
+    for (int i = 0; i < n; ++i)
+    {
+        result += in[i];
+    }
+    return result;
 }
 
 void transpose_cpu(int m, int n, const float *src, float *dst)
@@ -41,6 +59,17 @@ float CompareResult(int m, int n, const float *a, float *b)
 {
     float diff = 0.f;
     for (int i = 0; i < m * n; ++i)
+    {
+        diff += std::powf(a[i] - b[i], 2);
+    }
+
+    return std::sqrt(diff);
+}
+
+float CompareResult(int n, const float *a, float *b)
+{
+    float diff = 0.f;
+    for (int i = 0; i < n; ++i)
     {
         diff += std::powf(a[i] - b[i], 2);
     }

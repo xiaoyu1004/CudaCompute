@@ -26,7 +26,11 @@
 
 void InitData(int m, int n, float *p);
 
+void InitData(int n, float *p);
+
 void PrintData(int m, int n, const float *p);
+
+float ReduceCPU(int n, const float *in);
 
 void transpose_cpu(int m, int n, const float *src, float *dst);
 
@@ -36,5 +40,7 @@ void gemm_cpu(int m, int n, int k,
               float *C, int ldc);
 
 float CompareResult(int m, int n, const float *a, float *b);
+
+float CompareResult(int n, const float *a, float *b);
 
 #endif
