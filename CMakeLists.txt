@@ -10,4 +10,4 @@ set(common_src ${PROJECT_SOURCE_DIR}/src/common/common.cpp)
 include_directories(src/common)
 
 add_subdirectory(src/reduce)
-add_subdirectory(src/vecadd)
+# add_subdirectory(src/vecadd)

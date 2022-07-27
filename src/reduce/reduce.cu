@@ -20,9 +20,9 @@
 // #define grid(n) (((n - 1) / blocks + 1) / 4) // unroll4
 #define grid(n) (((n - 1) / blocks + 1) / 8) // unroll8
 
-__global__ void reduce_base_line(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_base_line(std::uint32_t n, std::uint32_t *__restrict__ in, std::uint32_t *__restrict__ out)
 {
-    float *__restrict__ in_data = in + blockIdx.x * blockDim.x;
+    std::uint32_t *__restrict__ in_data = in + blockIdx.x * blockDim.x;
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int tid = threadIdx.x;
     if (idx >= n)
@@ -46,9 +46,9 @@ __global__ void reduce_base_line(std::uint32_t n, float *__restrict__ in, float 
     }
 }
 
-__global__ void reduce_branch_differentiation(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_branch_differentiation(std::uint32_t n, std::uint32_t *__restrict__ in, std::uint32_t *__restrict__ out)
 {
-    float *__restrict__ in_data = in + blockIdx.x * blockDim.x;
+    std::uint32_t *__restrict__ in_data = in + blockIdx.x * blockDim.x;
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int tid = threadIdx.x;
     if (idx >= n)
@@ -73,16 +73,16 @@ __global__ void reduce_branch_differentiation(std::uint32_t n, float *__restrict
     }
 }
 
-__global__ void reduce_shared_memory(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_shared_memory(std::uint32_t n, std::uint32_t *__restrict__ in, std::uint32_t *__restrict__ out)
 {
-    extern __shared__ float s_data[];
+    extern __shared__ std::uint32_t s_data[];
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= n)
     {
         return;
     }
-    float *in_data = in + blockIdx.x * blockDim.x;
+    std::uint32_t *in_data = in + blockIdx.x * blockDim.x;
     int tid = threadIdx.x;
 
     s_data[tid] = in_data[tid];
@@ -104,11 +104,11 @@ __global__ void reduce_shared_memory(std::uint32_t n, float *__restrict__ in, fl
     }
 }
 
-__global__ void reduce_no_bank_conflict(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_no_bank_conflict(std::uint32_t n, std::uint32_t *__restrict__ in, std::uint32_t *__restrict__ out)
 {
-    float *in_data = in + blockIdx.x * blockDim.x;
+    std::uint32_t *in_data = in + blockIdx.x * blockDim.x;
     int tid = threadIdx.x;
-    extern __shared__ float s_data[];
+    extern __shared__ std::uint32_t s_data[];
     s_data[tid] = in_data[tid];
     __syncthreads();
 
@@ -128,12 +128,12 @@ __global__ void reduce_no_bank_conflict(std::uint32_t n, float *__restrict__ in,
     }
 }
 
-__global__ void reduce_shared_memory_unroll2(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_shared_memory_unroll2(std::uint32_t n, std::uint32_t *__restrict__ in, std::uint32_t *__restrict__ out)
 {
-    float *in_data = in + 2 * blockDim.x * blockIdx.x;
+    std::uint32_t *in_data = in + 2 * blockDim.x * blockIdx.x;
     int tid = threadIdx.x;
     // unroll 2
-    extern __shared__ float s_data[];
+    extern __shared__ std::uint32_t s_data[];
     s_data[tid] = in_data[tid] + in_data[tid + blocks];
     __syncthreads();
 
@@ -152,11 +152,11 @@ __global__ void reduce_shared_memory_unroll2(std::uint32_t n, float *__restrict_
     }
 }
 
-__global__ void reduce_shared_memory_unroll4(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_shared_memory_unroll4(std::uint32_t n, std::uint32_t *__restrict__ in, std::uint32_t *__restrict__ out)
 {
-    float *in_data = in + blockIdx.x * blockDim.x;
+    std::uint32_t *in_data = in + blockIdx.x * blockDim.x;
     int tid = threadIdx.x;
-    extern __shared__ float s_data[];
+    extern __shared__ std::uint32_t s_data[];
     s_data[tid] = in_data[tid] + in_data[tid + blocks] + in_data[tid + 2 * blocks] + in_data[tid + 3 * blocks];
     __syncthreads();
 
@@ -176,11 +176,11 @@ __global__ void reduce_shared_memory_unroll4(std::uint32_t n, float *__restrict_
     }
 }
 
-__global__ void reduce_shared_memory_unroll8(std::uint32_t n, float *__restrict__ in, float *__restrict__ out)
+__global__ void reduce_shared_memory_unroll8(std::uint32_t n, std::uint32_t *__restrict__ in, std::uint32_t *__restrict__ out)
 {
-    float *in_data = in + 8 * blockIdx.x * blockDim.x;
+    std::uint32_t *in_data = in + 8 * blockIdx.x * blockDim.x;
     int tid = threadIdx.x;
-    extern __shared__ float s_data[];
+    extern __shared__ std::uint32_t s_data[];
     s_data[tid] = in_data[tid] + in_data[tid + blocks] + in_data[tid + 2 * blocks] + in_data[tid + 3 * blocks] +
                   in_data[tid + 4 * blocks] + in_data[tid + 5 * blocks] + in_data[tid + 6 * blocks] + in_data[tid + 7 * blocks];
     __syncthreads();
@@ -206,18 +206,18 @@ int main(int argc, const char **argv)
     // std::ofstream fs("reduce_shared_memory_unroll2.txt", std::ios::out);
     // fs << "n\t\tperformance\t\tbandwidth\t\terr" << std::endl;
 
-    std::uint32_t n = 1 << 20;
-    float *h_data = new float[n];
+    std::uint32_t n = 1 << 25;
+    std::uint32_t *h_data = new std::uint32_t[n];
 
     InitData(n, h_data);
-    float h_sum = ReduceCPU(n, h_data);
-    float *h_ref_data = new float[grid(n)];
+    std::uint32_t h_sum = ReduceCPU(n, h_data);
+    std::uint32_t *h_ref_data = new std::uint32_t[grid(n)];
 
-    float *d_data;
-    float *d_ref_data;
-    CUDA_CHECK(cudaMalloc(&d_data, n * sizeof(float)));
-    CUDA_CHECK(cudaMalloc(&d_ref_data, grid(n) * sizeof(float)));
-    CUDA_CHECK(cudaMemset(d_ref_data, 0, grid(n) * sizeof(float)));
+    std::uint32_t *d_data;
+    std::uint32_t *d_ref_data;
+    CUDA_CHECK(cudaMalloc(&d_data, n * sizeof(std::uint32_t)));
+    CUDA_CHECK(cudaMalloc(&d_ref_data, grid(n) * sizeof(std::uint32_t)));
+    CUDA_CHECK(cudaMemset(d_ref_data, 0, grid(n) * sizeof(std::uint32_t)));
 
     int loop_count = 10;
 
@@ -228,18 +228,18 @@ int main(int argc, const char **argv)
 
     for (int i = 0; i < loop_count; ++i)
     {
-        CUDA_CHECK(cudaMemcpy(d_data, h_data, n * sizeof(float), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(d_data, h_data, n * sizeof(std::uint32_t), cudaMemcpyHostToDevice));
         t.start();
         // reduce_base_line<<<grid(n), blocks>>>(n, d_data, d_ref_data);
         // reduce_branch_differentiation<<<grid(n), blocks>>>(n, d_data, d_ref_data);
-        // reduce_shared_memory<<<grid(n), blocks, blocks * sizeof(float)>>>(n, d_data, d_ref_data);
-        // reduce_no_bank_conflict<<<grid(n), blocks, blocks * sizeof(float)>>>(n, d_data, d_ref_data);
-        // reduce_shared_memory_unroll2<<<grid(n), blocks, blocks * sizeof(float)>>>(n, d_data, d_ref_data);
-        // reduce_shared_memory_unroll4<<<grid(n), blocks, blocks * sizeof(float)>>>(n, d_data, d_ref_data);
-        reduce_shared_memory_unroll8<<<grid(n), blocks, blocks * sizeof(float)>>>(n, d_data, d_ref_data);
+        // reduce_shared_memory<<<grid(n), blocks, blocks * sizeof(std::uint32_t)>>>(n, d_data, d_ref_data);
+        // reduce_no_bank_conflict<<<grid(n), blocks, blocks * sizeof(std::uint32_t)>>>(n, d_data, d_ref_data);
+        // reduce_shared_memory_unroll2<<<grid(n), blocks, blocks * sizeof(std::uint32_t)>>>(n, d_data, d_ref_data);
+        // reduce_shared_memory_unroll4<<<grid(n), blocks, blocks * sizeof(std::uint32_t)>>>(n, d_data, d_ref_data);
+        reduce_shared_memory_unroll8<<<grid(n), blocks, blocks * sizeof(std::uint32_t)>>>(n, d_data, d_ref_data);
         CUDA_CHECK(cudaDeviceSynchronize());
         t.stop();
-        CUDA_CHECK(cudaMemcpy(h_ref_data, d_ref_data, grid(n) * sizeof(float), cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaMemcpy(h_ref_data, d_ref_data, grid(n) * sizeof(std::uint32_t), cudaMemcpyDeviceToHost));
 
         min = std::min(min, t.get_elapsed_nano_seconds());
         max = std::max(max, t.get_elapsed_nano_seconds());
@@ -247,13 +247,13 @@ int main(int argc, const char **argv)
     }
     avg /= loop_count;
 
-    float d_sum = 0.f;
+    std::uint32_t d_sum = 0;
     for (std::uint32_t i = 0; i < grid(n); ++i)
     {
         d_sum += h_ref_data[i];
     }
 
-    float err = CompareResult(1, &d_sum, &h_sum);
+    std::uint32_t err = CompareResult(1u, &d_sum, &h_sum);
     if (err > 1e-2)
     {
         std::cout << "ERROR: " << err << std::endl;
@@ -267,7 +267,7 @@ int main(int argc, const char **argv)
 
     double flops = n;
     double performance = flops / avg;
-    double bandwidth = 2 * n * sizeof(float) / avg;
+    double bandwidth = 2 * n * sizeof(std::uint32_t) / avg;
     std::cout << n << "\t" << performance << "\t" << bandwidth << "\t" << err << std::endl;
 
     std::cout << "max(ms)\tmin(ms)\tavg(ms)" << std::endl;
